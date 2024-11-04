@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/offchainlabs/nitro/kclients/pause"
 	"reflect"
 	"sort"
 	"sync/atomic"
@@ -336,6 +337,7 @@ func (n *ExecutionNode) Initialize(ctx context.Context) error {
 
 // not thread safe
 func (n *ExecutionNode) Start(ctx context.Context) error {
+	pause.Start()
 	if n.started.Swap(true) {
 		return errors.New("already started")
 	}
@@ -356,6 +358,7 @@ func (n *ExecutionNode) Start(ctx context.Context) error {
 }
 
 func (n *ExecutionNode) StopAndWait() {
+	pause.Stop()
 	if !n.started.Load() {
 		return
 	}
