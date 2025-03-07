@@ -19,6 +19,7 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
+	"github.com/offchainlabs/nitro/kclients/pause"
 	"os"
 	"path"
 	"runtime/pprof"
@@ -908,6 +909,11 @@ func (s *ExecutionEngine) digestMessageWithBlockMutex(num arbutil.MessageIndex, 
 	currentHeader, err := s.getCurrentHeader()
 	if err != nil {
 		return nil, err
+	}
+	if pause.RedisBehind(currentHeader.Number.Int64()) {
+		if shutdown := pause.PauseIfBehind("[ExecutionEngine.digestMessageWithBlockMutex]"); shutdown {
+			return nil, errors.New("### DEBUG ### Sync pause service exit")
+		}
 	}
 	curMsg, err := s.BlockNumberToMessageIndex(currentHeader.Number.Uint64())
 	if err != nil {
